@@ -1,20 +1,22 @@
-// Description: simple CAN device class for reading and writing CAN frames
-// Author: H.L. Kuang
-// Update: 2023/12/02
+//
+// @brief: CAN 设备读写操作类（实现） implementation for reading and writing CAN frames for CAN devices
+// @copyright: Copyright 2023 H.L. Kuang
+// @license: See repo license file
+// @birth: created by H.L. Kuang on 2023-12-02
+// @version: 1.0.0
+// @revision: last revised by H.L. Kuang on 2023-12-02
+//
 
 #include "CANDevice.h"
 
-// Constructor for read-only CAN device
 CANDevice::CANDevice(const char* interface, unsigned int readId, std::function<void(const struct can_frame&)> callback) : readId_(readId), writeId_(0), callback_(callback), stopThread_(false), canRead_(true), canWrite_(false) {
     initSocket_(interface);
 }
 
-// Constructor for write-only CAN device
 CANDevice::CANDevice(const char* interface, unsigned int writeId) : readId_(0), writeId_(writeId), callback_(nullptr), stopThread_(false), canRead_(false), canWrite_(true) {
     initSocket_(interface);
 }
 
-// Constructor for read-write CAN device
 CANDevice::CANDevice(const char* interface, unsigned int readId, std::function<void(const struct can_frame&)> callback, unsigned int writeId) : readId_(readId), writeId_(writeId), callback_(callback), stopThread_(false), canRead_(true), canWrite_(true) {
     initSocket_(interface);
 }
@@ -27,7 +29,6 @@ CANDevice::~CANDevice() {
     close(socket_);
 }
 
-// Start reading CAN frames from <readId>(defined in constructor), and send them to <callback>(defined in constructor)
 void CANDevice::read() {
     if (canRead_) {
         // Check if callback function is set
@@ -59,7 +60,6 @@ void CANDevice::read() {
     }
 }
 
-// Send <payload> with length <dlc> to <writeId>(defined in constructor)
 void CANDevice::send(const unsigned char* payload, int dlc) {
     if (canWrite_) {
         // Declare frame to send
@@ -137,33 +137,4 @@ void CANDevice::initSocket_(const char* interface) {
         close(socket_);
         throw std::runtime_error(std::string("Error setting socket options: ") + strerror(errno));
     }
-}
-
-void mycallback(const struct can_frame& frame) {
-    printf("%X[%d]#%s\n", frame.can_id, frame.can_dlc, frame.data);
-}
-
-int main() {
-    try {
-        CANDevice readDevice("vcan0", 0x301u, mycallback);
-        readDevice.read();
-
-        CANDevice writeDevice("vcan0", 0x401u);
-        unsigned char payload[8];
-        payload[0] = 0xAA;
-        payload[1] = 0xBB;
-        payload[2] = 0xCC;
-        payload[3] = 0xDD;
-        writeDevice.send(payload, sizeof(payload));
-
-        // 主线程会等待用户输入，直到用户按下 Enter 键
-        std::cout << "Press Ctrl + C to exit." << std::endl;
-        std::cin.get();
-
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
 }
