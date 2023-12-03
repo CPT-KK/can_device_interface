@@ -22,10 +22,12 @@ CANDevice::CANDevice(const char* interface, unsigned int readId, std::function<v
 }
 
 CANDevice::~CANDevice() {
+    printf("Stopping CAN receiving thread for 0x%X, please wait...\n", readId_);
     stopThread_ = true;
     if (receiveThread_.joinable()) {
         receiveThread_.join();
     }
+    printf("CAN receiving thread for 0x%X stopped.\n", readId_);
     close(socket_);
 }
 
@@ -42,9 +44,14 @@ void CANDevice::read() {
             while (!stopThread_) {
                 ssize_t bytesRead = recv(socket_, &frame, sizeof(struct can_frame), 0);
 
-                if (bytesRead == -1) {
-                    // Handle error
-                    throw std::runtime_error(std::string("Error receiving data frame: ") + strerror(errno));
+                if (bytesRead < 0) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        // CAN Timeout
+                        printf("Timeout receiving CAN frame from 0x%X.\n", readId_);
+                    } else {
+                        // Handle error
+                        throw std::runtime_error(std::string("Error receiving data frame: ") + strerror(errno));
+                    }   
                 } else if (bytesRead == 0) {
                     // Connection closed
                     throw std::runtime_error("Connection closed by peer");
@@ -52,7 +59,11 @@ void CANDevice::read() {
                     callback_(frame);
                 }
             }
+
+            return;
         });
+
+        // receiveThread_.detach();
     } else {
         throw std::logic_error("This device is not configured for reading.");
     }
@@ -135,4 +146,10 @@ void CANDevice::initSocket_(const char* interface) {
         close(socket_);
         throw std::runtime_error(std::string("Error setting socket options: ") + strerror(errno));
     }
+
+    // 设置接收超时时间
+    struct timeval timeout;
+    timeout.tv_sec = 2;
+    timeout.tv_usec = 0;
+    setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 }
