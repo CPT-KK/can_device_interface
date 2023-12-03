@@ -49,9 +49,7 @@ void CANDevice::read() {
                     // Connection closed
                     throw std::runtime_error("Connection closed by peer");
                 } else if (bytesRead == sizeof(struct can_frame)) {
-                    if (frame.can_id == readId_) {
-                        callback_(frame);
-                    }
+                    callback_(frame);
                 }
             }
         });

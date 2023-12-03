@@ -47,6 +47,9 @@ public:
     */
     CANDevice(const char* interface, unsigned int readId, std::function<void(const struct can_frame&)> callback, unsigned int writeId);
 
+    // Destructor
+    ~CANDevice();
+
     /**
      *  @brief Start reading CAN frames from <readId>(defined in constructor), and send them to <callback>(defined in constructor).
     */
@@ -61,9 +64,7 @@ public:
 
 
 private:
-    // Destructor
-    ~CANDevice();
-
+    
     bool canRead_;
     unsigned int readId_;
     std::function<void(const struct can_frame&)> callback_;
