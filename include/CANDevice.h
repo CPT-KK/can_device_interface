@@ -7,6 +7,8 @@
 // @revision: last revised by H.L. Kuang on 2023-12-02
 //
 
+#ifndef USV_CAN_DEVICE_H
+#define USV_CAN_DEVICE_H
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <net/if.h>
@@ -79,3 +81,4 @@ private:
     bool stopThread_;
     
 };
+#endif
