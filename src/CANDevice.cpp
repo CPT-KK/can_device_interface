@@ -149,7 +149,7 @@ void CANDevice::initSocket_(const char* interface) {
 
     // 设置接收超时时间
     struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 500000;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
     setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 }
