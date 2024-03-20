@@ -7,8 +7,8 @@
 // @revision: last revised by H.L. Kuang on 2023-12-02
 //
 
-#ifndef USV_CAN_DEVICE_H
-#define USV_CAN_DEVICE_H
+#ifndef CAN_DEVICE_INTERFACE_H
+#define CAN_DEVICE_INTERFACE_H
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <net/if.h>
@@ -58,7 +58,7 @@ public:
     void read();
 
     /**
-     *  @brief Send <payload> with length <dlc> to <writeId>(defined in constructor).
+     *  @brief Send <payload> with length <dlc> to <writeId>(defined in the constructor).
      *  @param payload The CAN frame payload to send.
      *  @param dlc The payload length.
     */
